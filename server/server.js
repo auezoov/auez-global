@@ -9,6 +9,12 @@ const initializeDatabase = require('./init-db');
 // Load environment variables
 require('./env.js');
 
+// Override with production config if needed
+if (process.env.NODE_ENV === 'production') {
+  const prodConfig = require('./production-config');
+  Object.assign(process.env, prodConfig);
+}
+
 const app = express();
 const PORT = process.env.PORT || 10000;
 
