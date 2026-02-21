@@ -7,7 +7,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "start": "node server-pro.js",
+    "start": "node server-pro-minimal.js",
     "server": "node server-pro.js",
     "tunnel": "ngrok http 3001",
     "dev": "concurrently \"node server-pro.js\" \"ngrok http 3001\"",
