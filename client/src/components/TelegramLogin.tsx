@@ -25,7 +25,13 @@ export default function TelegramLogin() {
     script.setAttribute('data-request-access', 'write')
     script.async = true
     
-    document.head.appendChild(script)
+    // Append to the widget container, not head
+    const widgetContainer = document.getElementById('telegram-login-widget')
+    if (widgetContainer) {
+      widgetContainer.appendChild(script)
+    } else {
+      document.head.appendChild(script)
+    }
 
     // Listen for Telegram auth callback
     window.onTelegramAuth = async (user: TelegramUser) => {
@@ -50,7 +56,9 @@ export default function TelegramLogin() {
     }
 
     return () => {
-      if (document.head.contains(script)) {
+      if (widgetContainer && widgetContainer.contains(script)) {
+        widgetContainer.removeChild(script)
+      } else if (document.head.contains(script)) {
         document.head.removeChild(script)
       }
     }
