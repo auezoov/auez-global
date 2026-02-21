@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 10000;
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? true 
+    ? ['https://auez-global.vercel.app', 'https://auezoov.vercel.app'] 
     : ['http://localhost:5173', 'http://localhost:5173/auez-global'],
   credentials: true
 }));
