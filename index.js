@@ -18,7 +18,7 @@ console.log('📂 Script directory:', __dirname);
 const app = express();
 
 // Safe static files serving with absolute paths
-const distPath = path.resolve(process.cwd(), 'dist');
+const distPath = path.resolve(process.cwd(), 'client', 'dist');
 console.log('📦 Static files path:', distPath);
 
 if (fs.existsSync(distPath)) {
