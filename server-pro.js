@@ -10,6 +10,10 @@ import http from 'http'
 import { networkInterfaces } from 'os'
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Safe environment loading
 try {
@@ -86,9 +90,13 @@ console.log("-> Setting up middleware...")
   app.use(express.json())
 
   // Serve static files from dist folder (production build) with Linux-compatible path
-  const distPath = path.join(process.cwd(), 'dist')
+  const distPath = path.join(__dirname, 'dist')
   console.log("-> Static files path:", distPath)
   app.use(express.static(distPath))
+
+  app.get('(.*)', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
 
   console.log("-> Setting up database...")
   const db = new sqlite3.Database(DB_PATH, (err) => {

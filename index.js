@@ -164,5 +164,8 @@ process.on('SIGINT', () => {
   });
 });
 
-// Vercel export
+// AUEZ API Ready
+console.log("AUEZ API Ready");
+
+// Vercel export - don't start server manually
 export default app;
