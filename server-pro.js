@@ -5,25 +5,38 @@ import cors from 'cors'
 import sqlite3 from 'sqlite3'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { config } from 'dotenv'
 import { WebSocketServer } from 'ws'
 import http from 'http'
 import { networkInterfaces } from 'os'
 import fs from 'fs'
+import path from 'path'
+
+// Safe environment loading
+try {
+  if (fs.existsSync('.env')) {
+    console.log("-> Loading .env file...")
+    const { config } = await import('dotenv')
+    config()
+  } else {
+    console.log("-> No .env file found, using fallback values")
+  }
+} catch (err) {
+  console.log("-> Failed to load .env, using fallback values:", err.message)
+}
 
 try {
-  console.log("-> Loading environment...")
-  config()
-
   console.log("-> Initializing Express...")
   const app = express()
   const server = http.createServer(app)
   const wss = new WebSocketServer({ port: 3002 })
-  const PORT = 10000
+  
+  // Safe configuration with fallbacks
+  const PORT = process.env.PORT || 10000
   const HOST = process.env.HOST || '0.0.0.0'
-  const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
-  const NODE_ENV = process.env.NODE_ENV || 'development'
+  const JWT_SECRET = process.env.JWT_SECRET || "super_secret_fallback"
+  const NODE_ENV = process.env.NODE_ENV || 'production'
   const DB_PATH = process.env.DB_PATH || './auez.db'
+  const MONGODB_URI = process.env.MONGODB_URI || "mongodb://fallback_uri"
 
   console.log("-> Setting up local IP function...")
 
@@ -72,8 +85,10 @@ console.log("-> Setting up middleware...")
 
   app.use(express.json())
 
-  // Serve static files from dist folder (production build)
-  app.use(express.static('dist'))
+  // Serve static files from dist folder (production build) with Linux-compatible path
+  const distPath = path.join(process.cwd(), 'dist')
+  console.log("-> Static files path:", distPath)
+  app.use(express.static(distPath))
 
   console.log("-> Setting up database...")
   const db = new sqlite3.Database(DB_PATH, (err) => {
@@ -767,9 +782,11 @@ console.log("-> Setting up routes...")
   // Mount API router
   app.use('/api', router)
 
-  // SPA fallback - serve index.html for all non-API routes
+  // SPA fallback - serve index.html for all non-API routes with Linux-compatible path
   app.get('(.*)', (req, res) => {
-    res.sendFile('dist/index.html', { root: '.' })
+    const indexPath = path.join(process.cwd(), 'dist', 'index.html')
+    console.log("-> Serving SPA fallback:", indexPath)
+    res.sendFile(indexPath)
   })
 
   console.log("-> Starting server...")
