@@ -1,3 +1,5 @@
+console.log("Backend initialized");
+
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -26,7 +28,7 @@ app.use((req, res, next) => {
 });
 
 // Safe static files serving with absolute paths
-const distPath = path.resolve(process.cwd(), 'client', 'dist');
+const distPath = path.join(process.cwd(), 'dist');
 console.log('📦 Static files path:', distPath);
 console.log('📂 Dist folder exists:', fs.existsSync(distPath));
 
@@ -49,7 +51,6 @@ app.get('/api/health', (req, res) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     version: '2.0.0',
-    database: db ? 'connected' : 'disconnected',
     environment: process.env.NODE_ENV || 'development'
   });
 });
@@ -66,7 +67,7 @@ app.get('/api/test', (req, res) => {
 
 // Safe SPA fallback
 app.get('*', (req, res) => {
-  const indexPath = path.resolve(distPath, 'index.html');
+  const indexPath = path.join(distPath, 'index.html');
   console.log('🔄 SPA fallback request:', req.path);
   console.log('📄 Serving file:', indexPath);
   
