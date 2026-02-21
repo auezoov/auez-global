@@ -15,6 +15,11 @@ const computerSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  zone: {
+    type: String,
+    enum: ['Standard Zone', 'VIP Zone'],
+    required: true
+  },
   lastUpdate: {
     type: Date,
     default: Date.now
