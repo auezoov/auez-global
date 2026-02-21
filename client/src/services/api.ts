@@ -73,6 +73,17 @@ class ApiService {
     return response
   }
 
+  // Telegram authentication
+  async telegramAuth(userData: any): Promise<{ token: string; user: any }> {
+    const response = await this.request('/api/auth/telegram', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    })
+    const data = await response.json()
+    this.setToken(data.token)
+    return data
+  }
+
   // Phone authentication
   async requestCode(phone: string): Promise<{ message: string }> {
     const response = await this.request('/api/auth/request-code', {

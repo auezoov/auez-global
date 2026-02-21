@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Monitor, DollarSign, Clock, AlertCircle, Settings as SettingsIcon, Zap, Phone } from 'lucide-react'
+import { Monitor, DollarSign, Clock, AlertCircle, Settings as SettingsIcon, Zap } from 'lucide-react'
 import PCMap from './components/PCMap'
 import FinanceDashboard from './components/FinanceDashboard'
 import ShiftManager from './components/ShiftManager'
@@ -10,7 +10,8 @@ import ErrorBoundary from './components/ErrorBoundary'
 import AdminNotification from './components/AdminNotification'
 import RoleLogin from './components/RoleLogin'
 import ComputerList from './components/ComputerList'
-import AppAuth from './App-auth'
+import TelegramLogin from './components/TelegramLogin'
+import apiService from './services/api'
 
 function App() {
   const [activeTab, setActiveTab] = useState('computers')
@@ -19,50 +20,15 @@ function App() {
   const [clientUsername, setClientUsername] = useState('')
   const [clubName, setClubName] = useState('AUEZ GLOBAL')
   const [showRoleLogin, setShowRoleLogin] = useState(false)
-  const [usePhoneAuth, setUsePhoneAuth] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  // Business metrics
-  const [metrics, setMetrics] = useState({
-    todayRevenue: 45600,
-    activeUsers: 24,
-    totalSessions: 156,
-    avgSessionTime: '2h 15m',
-    occupancyRate: 85
-  })
-
-  // Check localStorage on mount for persistent login
+  // Check authentication on mount
   useEffect(() => {
-    const savedUsername = localStorage.getItem('clientUsername')
-    const savedLoginTime = localStorage.getItem('loginTime')
-    
-    if (savedUsername && savedLoginTime) {
-      const loginAge = Date.now() - parseInt(savedLoginTime)
-      // Keep login for 24 hours
-      if (loginAge < 24 * 60 * 60 * 1000) {
-        setClientUsername(savedUsername)
-        setIsClientView(true)
-      } else {
-        localStorage.removeItem('clientUsername')
-        localStorage.removeItem('loginTime')
-      }
+    const token = apiService.getToken()
+    if (token) {
+      setIsAuthenticated(true)
+      setIsClientView(true)
     }
-
-    // Load club settings
-    const savedClubName = localStorage.getItem('clubName')
-    if (savedClubName) setClubName(savedClubName)
-
-    // Simulate real-time metrics updates
-    const interval = setInterval(() => {
-      setMetrics(prev => ({
-        ...prev,
-        todayRevenue: prev.todayRevenue + Math.floor(Math.random() * 1000),
-        activeUsers: Math.max(0, prev.activeUsers + Math.floor(Math.random() * 3) - 1),
-        totalSessions: prev.totalSessions + Math.floor(Math.random() * 2),
-        occupancyRate: Math.min(100, Math.max(0, prev.occupancyRate + Math.floor(Math.random() * 5) - 2))
-      }))
-    }, 5000)
-
-    return () => clearInterval(interval)
   }, [])
 
   const handleLogin = (username: string, role: string) => {

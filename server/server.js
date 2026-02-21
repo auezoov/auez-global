@@ -6,6 +6,7 @@ const sessionRoutes = require('./routes/session');
 const financeRoutes = require('./routes/finance');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
+const telegramRoutes = require('./routes/telegram');
 const initializeDatabase = require('./init-db');
 
 // Load environment variables
@@ -29,6 +30,7 @@ app.use('/api/session', sessionRoutes);
 app.use('/api/finance', financeRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/auth/telegram', telegramRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
