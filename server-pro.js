@@ -1,3 +1,5 @@
+console.log("!!! BOOTING UP AUEZ SERVER !!!")
+
 import express from 'express'
 import cors from 'cors'
 import sqlite3 from 'sqlite3'
@@ -14,7 +16,7 @@ config()
 const app = express()
 const server = http.createServer(app)
 const wss = new WebSocketServer({ port: 3002 })
-const PORT = process.env.PORT || 3001
+const PORT = 10000
 const HOST = process.env.HOST || '0.0.0.0'
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
 const NODE_ENV = process.env.NODE_ENV || 'development'
