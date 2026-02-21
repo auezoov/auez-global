@@ -65,9 +65,9 @@ app.get('/api/test', (req, res) => {
   });
 });
 
-// Safe SPA fallback
-app.get('*', (req, res) => {
-  const indexPath = path.join(distPath, 'index.html');
+// Safe SPA fallback - LAST ROUTE
+app.get('(.*)', (req, res) => {
+  const indexPath = path.join(process.cwd(), 'dist', 'index.html');
   console.log('🔄 SPA fallback request:', req.path);
   console.log('📄 Serving file:', indexPath);
   
