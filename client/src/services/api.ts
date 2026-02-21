@@ -174,50 +174,102 @@ class ApiService {
 
   // Admin operations
   async callAdmin(message: string): Promise<{ success: boolean; message: string; timestamp: string }> {
-    const response = await this.request('/api/admin/call', {
-      method: 'POST',
-      body: JSON.stringify({ message }),
-    })
-
-    return response.json()
-  }
-
-  // Notifications
-  async getNotifications(): Promise<any[]> {
-    const response = await this.request('/api/notifications')
-    return response.json()
+    // const response = await this.request('/api/admin/call', {
+    //   method: 'POST',
+    //   body: JSON.stringify({ message }),
+    // })
+    // return response.json()
+    
+    // Mock response
+    return {
+      success: true,
+      message: 'Admin called successfully',
+      timestamp: new Date().toISOString()
+    }
   }
 
   // Heartbeat check for server health
   async heartbeat(): Promise<{ success: boolean; status: string; message?: string }> {
     try {
-      const response = await this.request('/api/heartbeat')
-      const data = await response.json()
-      return data
+      // const response = await this.request('/api/heartbeat')
+      // const data = await response.json()
+      // return data
+      
+      // Mock response
+      return {
+        success: true,
+        status: 'online',
+        message: 'Server is running'
+      }
     } catch (error) {
-      return { success: false, status: 'offline', message: 'Server unreachable' }
+      return {
+        success: false,
+        status: 'offline',
+        message: 'Server unavailable'
+      }
     }
+  }
+
+  // Notifications
+  async getNotifications(): Promise<any[]> {
+    // const response = await this.request('/api/notifications')
+    // return response.json()
+    
+    // Mock response
+    return [
+      { id: 1, message: 'Notification 1', timestamp: new Date().toISOString() },
+      { id: 2, message: 'Notification 2', timestamp: new Date().toISOString() },
+    ]
   }
 
   // Session operations
   async startSession(userId: number, duration: number = 1): Promise<{ success: boolean; sessionId: number; cost: number; newBalance: number }> {
-    const response = await this.request('/api/session/start', {
-      method: 'POST',
-      body: JSON.stringify({ userId, duration }),
-    })
-
-    return response.json()
+    // const response = await this.request('/api/session/start', {
+    //   method: 'POST',
+    //   body: JSON.stringify({ userId, duration }),
+    // })
+    // return response.json()
+    
+    // Mock response
+    return {
+      success: true,
+      sessionId: Math.floor(Math.random() * 1000),
+      cost: duration * 10,
+      newBalance: 1000 - (duration * 10)
+    }
   }
 
   async getActiveSession(userId: number): Promise<{ success: boolean; session: any }> {
-    const response = await this.request(`/api/session/active?userId=${userId}`)
-    return response.json()
+    // const response = await this.request(`/api/session/active?userId=${userId}`)
+    // return response.json()
+    
+    // Mock response
+    return {
+      success: true,
+      session: {
+        id: Math.floor(Math.random() * 1000),
+        userId,
+        duration: 1,
+        cost: 10,
+        newBalance: 1000 - 10
+      }
+    }
   }
 
   // Shop operations
   async getShopItems(): Promise<{ items: any[] }> {
-    const response = await this.request('/api/shop/items')
-    return response.json()
+    // const response = await this.request('/api/shop/items')
+    // return response.json()
+    
+    // Mock response
+    return {
+      items: [
+        { id: 1, name: 'Кофе', price: 50, category: 'drinks' },
+        { id: 2, name: 'Чай', price: 30, category: 'drinks' },
+        { id: 3, name: 'Бутерброд', price: 80, category: 'food' },
+        { id: 4, name: 'Чипсы', price: 60, category: 'snacks' }
+      ]
+    }
   }
 
   async purchaseItem(userId: number, itemId: number, quantity: number = 1): Promise<{ success: boolean; item: string; quantity: number; totalCost: number; newBalance: number }> {
