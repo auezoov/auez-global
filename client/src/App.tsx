@@ -44,13 +44,12 @@ function App() {
   const handleLogout = () => {
     setIsClientView(false)
     setClientUsername('')
-    localStorage.removeItem('clientUsername')
-    localStorage.removeItem('loginTime')
+    apiService.clearToken()
   }
 
-  // If using phone authentication, show the auth app
-  if (usePhoneAuth) {
-    return <AppAuth />
+  // If not authenticated, show Telegram login
+  if (!isAuthenticated) {
+    return <TelegramLogin />
   }
 
   const businessTabs = [
@@ -65,56 +64,26 @@ function App() {
     <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-b border-gray-700">
       <div className="px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Zap className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white">{clubName}</h1>
-                <p className="text-gray-400 text-sm">Система управления интернет-клубом</p>
-              </div>
+          <div className="flex items-center space-x-4">
+            <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+              <Zap className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white">{clubName}</h1>
+              <p className="text-gray-400 text-sm">Административная панель</p>
             </div>
           </div>
-
-          <div className="flex items-center space-x-8">
-            <div className="flex items-center space-x-6">
-              <div className="text-center">
-                <p className="text-gray-400 text-xs">Сегодня</p>
-                <p className="text-green-400 font-bold text-lg">{metrics.todayRevenue.toLocaleString()} ₸</p>
-              </div>
-              <div className="text-center">
-                <p className="text-gray-400 text-xs">Активно</p>
-                <p className="text-blue-400 font-bold text-lg">{metrics.activeUsers}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-gray-400 text-xs">Сессий</p>
-                <p className="text-purple-400 font-bold text-lg">{metrics.totalSessions}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-gray-400 text-xs">Заполнение</p>
-                <p className="text-yellow-400 font-bold text-lg">{metrics.occupancyRate}%</p>
-              </div>
+          <div className="flex items-center space-x-4">
+            <div className="text-right">
+              <p className="text-white font-medium">{activeAdmin}</p>
+              <p className="text-gray-400 text-sm">Администратор</p>
             </div>
-
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => setUsePhoneAuth(true)}
-                className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 px-3 py-1 rounded-full transition-colors flex items-center space-x-2"
-              >
-                <Phone className="w-4 h-4" />
-                <span className="text-sm">Вход по телефону</span>
-              </button>
-              
-              <div className="flex items-center space-x-2 bg-green-500/20 px-3 py-1 rounded-full">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-green-400 text-sm">Онлайн</span>
-              </div>
-              <div className="text-white">
-                <p className="text-sm font-medium">{activeAdmin}</p>
-                <p className="text-gray-400 text-xs">Администратор</p>
-              </div>
-            </div>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg transition-colors"
+            >
+              Выйти
+            </button>
           </div>
         </div>
       </div>
@@ -124,57 +93,87 @@ function App() {
   const renderBusinessTabs = () => (
     <div className="bg-gray-800 border-b border-gray-700">
       <div className="px-6">
-        <div className="flex space-x-1">
-          {businessTabs.map((tab) => {
-            const Icon = tab.icon
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 px-4 py-3 rounded-t-lg transition-all duration-200 ${
-                  activeTab === tab.id
-                    ? 'bg-gray-900 text-white border-t-2 border-blue-500'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span className="font-medium">{tab.name}</span>
-              </button>
-            )
-          })}
+        <div className="flex space-x-8">
+          {businessTabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`py-4 px-2 border-b-2 transition-colors flex items-center space-x-2 ${
+                activeTab === tab.id
+                  ? `border-blue-500 text-white`
+                  : 'border-transparent text-gray-400 hover:text-gray-300'
+              }`}
+            >
+              <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-blue-400' : ''}`} />
+              <span className="font-medium">{tab.name}</span>
+            </button>
+          ))}
         </div>
       </div>
     </div>
   )
 
-  if (showRoleLogin) {
-    return <RoleLogin onLogin={handleLogin} />
+  const renderBusinessContent = () => {
+    switch (activeTab) {
+      case 'computers':
+        return <ComputerList />
+      case 'finance':
+        return <FinanceDashboard />
+      case 'shifts':
+        return <ShiftManager />
+      case 'notifications':
+        return <Notifications />
+      case 'settings':
+        return <Settings />
+      default:
+        return <ComputerList />
+    }
   }
 
-  if (isClientView) {
-    return <ClientDashboard username={clientUsername} onLogout={handleLogout} />
-  }
+  const renderClientView = () => (
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900">
+      <div className="bg-black/20 backdrop-blur-sm border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">{clubName}</h1>
+                <p className="text-blue-200 text-sm">Клиентский портал</p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg transition-colors"
+            >
+              Выйти
+            </button>
+          </div>
+        </div>
+      </div>
+      <ClientDashboard />
+    </div>
+  )
 
-  return (
+  const renderBusinessView = () => (
     <div className="min-h-screen bg-gray-900">
       {renderBusinessHeader()}
       {renderBusinessTabs()}
-      
       <div className="p-6">
-        <ErrorBoundary>
-          {activeTab === 'computers' && <ComputerList />}
-          {activeTab === 'finance' && <FinanceDashboard />}
-          {activeTab === 'shifts' && <ShiftManager />}
-          {activeTab === 'notifications' && <Notifications />}
-          {activeTab === 'settings' && <Settings />}
-        </ErrorBoundary>
+        {renderBusinessContent()}
       </div>
-
-      <AdminNotification 
-        onOpen={() => setShowRoleLogin(true)}
-        onClose={() => setShowRoleLogin(false)}
-      />
     </div>
+  )
+
+  return (
+    <ErrorBoundary>
+      <div className="min-h-screen">
+        <AdminNotification />
+        {isClientView ? renderClientView() : renderBusinessView()}
+      </div>
+    </ErrorBoundary>
   )
 }
 
