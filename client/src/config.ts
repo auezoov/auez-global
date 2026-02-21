@@ -1,3 +1,3 @@
-export const API_BASE_URL = 'https://auez-backend.onrender.com/api'
+export const API_BASE_URL = 'https://auez-global.onrender.com/api'
 
-export const WS_URL = 'wss://auez-backend.onrender.com'
+export const WS_URL = 'wss://auez-global.onrender.com'
