@@ -1,5 +1,5 @@
-export const API_BASE_URL = 'https://auez-global.onrender.com/api'
+export const API_BASE_URL = ''
 
-export const WS_URL = 'wss://auez-global.onrender.com'
+export const WS_URL = ''
 
 // Force Vercel rebuild - fix 500 error

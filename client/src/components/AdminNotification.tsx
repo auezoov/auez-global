@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Bell, X, Monitor } from 'lucide-react'
 import apiService from '../services/api'
-import { API_BASE_URL } from '../config'
 
 interface Notification {
   type: 'session_start' | 'session_end' | 'admin_call'
@@ -35,7 +34,7 @@ export default function AdminNotification() {
         const token = apiService.getToken()
         if (!token) return
 
-        const response = await fetch(`${API_BASE_URL}/session/active`, {
+        const response = await fetch(`/api/session/active`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Activity, CheckCircle, AlertCircle, Users, Clock } from 'lucide-react'
 import apiService from '../services/api'
-import { API_BASE_URL } from '../config'
 
 interface LogEntry {
   id: string
@@ -70,7 +69,7 @@ export default function LiveLog() {
         const token = apiService.getToken()
         if (!token) return
 
-        const response = await fetch(`${API_BASE_URL}/session/active`, {
+        const response = await fetch(`/api/session/active`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
