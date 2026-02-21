@@ -1,22 +1,11 @@
 import { useState, useEffect } from 'react'
-import apiService from '../services/api'
-
-interface TelegramUser {
-  id: number
-  first_name: string
-  last_name?: string
-  username?: string
-  photo_url?: string
-  auth_date: number
-  hash: string
-}
 
 export default function TelegramLogin() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Load Telegram Login Widget script
+    // Load Telegram Login Widget script once
     const script = document.createElement('script')
     script.src = 'https://telegram.org/js/telegram-widget.js?22'
     script.setAttribute('data-telegram-login', 'Auez_club_bot')
@@ -25,44 +14,19 @@ export default function TelegramLogin() {
     script.setAttribute('data-request-access', 'write')
     script.async = true
     
-    // Append to the widget container, not head
+    // Append to the widget container
     const widgetContainer = document.getElementById('telegram-login-widget')
     if (widgetContainer) {
       widgetContainer.appendChild(script)
-    } else {
-      document.head.appendChild(script)
-    }
-
-    // Listen for Telegram auth callback
-    window.onTelegramAuth = async (user: TelegramUser) => {
-      setIsLoading(true)
-      setError(null)
-      
-      try {
-        const response = await apiService.telegramAuth(user)
-        
-        if (response.token) {
-          apiService.setToken(response.token)
-          window.location.href = '/dashboard'
-        } else {
-          setError('Authentication failed')
-        }
-      } catch (err) {
-        setError('Authentication error')
-        console.error('Telegram auth error:', err)
-      } finally {
-        setIsLoading(false)
-      }
     }
 
     return () => {
+      // Cleanup only if script exists
       if (widgetContainer && widgetContainer.contains(script)) {
         widgetContainer.removeChild(script)
-      } else if (document.head.contains(script)) {
-        document.head.removeChild(script)
       }
     }
-  }, [])
+  }, []) // Empty dependency array - run only once
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4">
