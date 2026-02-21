@@ -2,16 +2,17 @@
   "name": "auez",
   "private": true,
   "version": "0.0.0",
+  "main": "index.js",
   "type": "module",
   "engines": {
     "node": ">=18.0.0"
   },
   "scripts": {
-    "start": "node server-pro-minimal.js",
+    "start": "node index.js",
     "server": "node server-pro.js",
     "tunnel": "ngrok http 3001",
     "dev": "concurrently \"node server-pro.js\" \"ngrok http 3001\"",
-    "build": "tsc -b && vite build",
+    "build": "npm install && cd src && npm install && npm run build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
