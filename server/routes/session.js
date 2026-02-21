@@ -22,15 +22,22 @@ const authMiddleware = (req, res, next) => {
 // GET /api/session/active - Get active session for authenticated user
 router.get('/active', authMiddleware, async (req, res) => {
   try {
-    const activeSession = await Session.findOne({ 
-      userId: req.user.userId,
-      status: 'active'
-    }).populate('userId', 'phone');
-    
+    // Mock response for now
     res.json({ 
-      success: !!activeSession,
-      session: activeSession 
+      success: false,
+      session: null,
+      message: "No active session"
     });
+    
+    // const activeSession = await Session.findOne({ 
+    //   userId: req.user.userId,
+    //   status: 'active'
+    // }).populate('userId', 'phone');
+    
+    // res.json({ 
+    //   success: !!activeSession,
+    //   session: activeSession 
+    // });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
