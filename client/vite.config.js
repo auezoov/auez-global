@@ -3,21 +3,24 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/auez-global/',
   plugins: [react()],
   server: {
-    host: true, // Expose to local network
+    host: true,
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:10000',
         changeOrigin: true,
         secure: false,
-      },
-      '/api2': {
-        target: 'http://127.0.0.1:5000',
-        changeOrigin: true,
-        secure: false
+        rewrite: (path) => path.replace(/^\/api/, '/api')
       }
     }
+  },
+  build: {
+    outDir: 'dist'
+  },
+  define: {
+    global: 'globalThis',
   }
 })

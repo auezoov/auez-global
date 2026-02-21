@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: auez-backend
+    env: node
+    plan: free
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        value: mongodb+srv://admin:183349@cluster0.xkfg5yg.mongodb.net/auezdb

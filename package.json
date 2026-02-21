@@ -1,0 +1,23 @@
+{
+  "name": "auez-global-monorepo",
+  "version": "1.0.0",
+  "description": "Full-stack monorepo for AUEZ Global project",
+  "scripts": {
+    "server": "cd server && npm start",
+    "client": "cd client && npm run dev",
+    "dev": "concurrently --shell \"powershell.exe\" --kill-others \"npm run server\" \"npm run client\"",
+    "dev-fallback": "node clean.js",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
+    "start-server": "cd server && node server.js",
+    "start-client": "cd client && npm run dev"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "concurrently": "^8.2.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "lucide-react": "^0.575.0",
+    "mongoose": "^9.2.1"
+  }
+}
