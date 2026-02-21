@@ -761,7 +761,7 @@ router.get('/heartbeat', (req, res) => {
 app.use('/api', router)
 
 // SPA fallback - serve index.html for all non-API routes
-app.get('/*', (req, res) => {
+app.get('(.*)', (req, res) => {
   res.sendFile('dist/index.html', { root: '.' })
 })
 
