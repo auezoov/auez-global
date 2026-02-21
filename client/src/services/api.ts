@@ -125,12 +125,12 @@ class ApiService {
 
   // PC operations
   async getPCs(): Promise<PC[]> {
-    const response = await this.request('/pcs')
+    const response = await this.request('/api/computers')
     return response.json()
   }
 
   async updatePCStatus(pcId: string, status: string, customer?: string): Promise<{ success: boolean; pcId: string; status: string }> {
-    const response = await this.request(`/pcs/${pcId}/status`, {
+    const response = await this.request(`/api/pcs/${pcId}/status`, {
       method: 'POST',
       body: JSON.stringify({ status, customer }),
     })
@@ -140,12 +140,12 @@ class ApiService {
 
   // Shift operations
   async getShifts(): Promise<Shift[]> {
-    const response = await this.request('/shifts')
+    const response = await this.request('/api/shifts')
     return response.json()
   }
 
   async startShift(adminName: string): Promise<{ success: boolean; shiftStarted: boolean }> {
-    const response = await this.request('/shifts/start', {
+    const response = await this.request('/api/shifts/start', {
       method: 'POST',
       body: JSON.stringify({ adminName }),
     })
@@ -154,7 +154,7 @@ class ApiService {
   }
 
   async endShift(shiftId: number): Promise<{ success: boolean; shiftEnded: boolean }> {
-    const response = await this.request(`/shifts/${shiftId}/end`, {
+    const response = await this.request(`/api/shifts/${shiftId}/end`, {
       method: 'POST',
     })
 
@@ -163,7 +163,7 @@ class ApiService {
 
   // Admin operations
   async callAdmin(message: string): Promise<{ success: boolean; message: string; timestamp: string }> {
-    const response = await this.request('/admin/call', {
+    const response = await this.request('/api/admin/call', {
       method: 'POST',
       body: JSON.stringify({ message }),
     })
@@ -173,14 +173,14 @@ class ApiService {
 
   // Notifications
   async getNotifications(): Promise<any[]> {
-    const response = await this.request('/notifications')
+    const response = await this.request('/api/notifications')
     return response.json()
   }
 
   // Heartbeat check for server health
   async heartbeat(): Promise<{ success: boolean; status: string; message?: string }> {
     try {
-      const response = await this.request('/heartbeat')
+      const response = await this.request('/api/heartbeat')
       const data = await response.json()
       return data
     } catch (error) {
@@ -190,7 +190,7 @@ class ApiService {
 
   // Session operations
   async startSession(userId: number, duration: number = 1): Promise<{ success: boolean; sessionId: number; cost: number; newBalance: number }> {
-    const response = await this.request('/session/start', {
+    const response = await this.request('/api/session/start', {
       method: 'POST',
       body: JSON.stringify({ userId, duration }),
     })
@@ -199,18 +199,18 @@ class ApiService {
   }
 
   async getActiveSession(userId: number): Promise<{ success: boolean; session: any }> {
-    const response = await this.request(`/session/active?userId=${userId}`)
+    const response = await this.request(`/api/session/active?userId=${userId}`)
     return response.json()
   }
 
   // Shop operations
   async getShopItems(): Promise<{ items: any[] }> {
-    const response = await this.request('/shop/items')
+    const response = await this.request('/api/shop/items')
     return response.json()
   }
 
   async purchaseItem(userId: number, itemId: number, quantity: number = 1): Promise<{ success: boolean; item: string; quantity: number; totalCost: number; newBalance: number }> {
-    const response = await this.request('/shop/purchase', {
+    const response = await this.request('/api/shop/purchase', {
       method: 'POST',
       body: JSON.stringify({ userId, itemId, quantity }),
     })
@@ -219,13 +219,13 @@ class ApiService {
 
   // Tariff operations
   async getTariffs(): Promise<{ tariffs: any[] }> {
-    const response = await this.request('/tariffs')
+    const response = await this.request('/api/tariffs')
     return response.json()
   }
 
   // Balance operations
   async topUpBalance(userId: number, amount: number): Promise<{ success: boolean; amount: number; newBalance: number }> {
-    const response = await this.request('/balance/topup', {
+    const response = await this.request('/api/balance/topup', {
       method: 'POST',
       body: JSON.stringify({ userId, amount }),
     })
@@ -234,7 +234,7 @@ class ApiService {
 
   // Enhanced authentication
   async authLogin(username: string, password: string): Promise<{ success: boolean; user: any; token: string; redirect: string }> {
-    const response = await this.request('/auth/login', {
+    const response = await this.request('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     })
@@ -243,29 +243,29 @@ class ApiService {
 
   // Role-based access
   async getAdminPanel(): Promise<{ success: boolean; message: string; user: any }> {
-    const response = await this.request('/admin/panel')
+    const response = await this.request('/api/admin/panel')
     return response.json()
   }
 
   async getClientDashboard(): Promise<{ success: boolean; message: string; user: any }> {
-    const response = await this.request('/client/dashboard')
+    const response = await this.request('/api/client/dashboard')
     return response.json()
   }
 
   // Finance operations
   async getFinanceData(): Promise<{ todayRevenue: number; totalSessions: number; popularPC: string; newCustomers: number }> {
-    const response = await this.request('/finance')
+    const response = await this.request('/api/finance')
     return response.json()
   }
 
   // Computer operations for MongoDB integration
   async getComputers(): Promise<any[]> {
-    const response = await this.request('/computers')
+    const response = await this.request('/api/computers')
     return response.json()
   }
 
   async updateComputerStatus(computerId: string, status: string): Promise<any> {
-    const response = await this.request(`/computers/${computerId}`, {
+    const response = await this.request(`/api/computers/${computerId}`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
     })
@@ -273,7 +273,7 @@ class ApiService {
   }
 
   async bookComputer(computerId: string, userId: string, duration: number): Promise<any> {
-    const response = await this.request(`/computers/${computerId}/book`, {
+    const response = await this.request(`/api/computers/${computerId}/book`, {
       method: 'POST',
       body: JSON.stringify({ userId, duration }),
     })
@@ -281,7 +281,7 @@ class ApiService {
   }
 
   async getComputerBookings(computerId: string): Promise<any[]> {
-    const response = await this.request(`/computers/${computerId}/bookings`)
+    const response = await this.request(`/api/computers/${computerId}/bookings`)
     return response.json()
   }
 }
