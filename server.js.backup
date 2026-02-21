@@ -1,0 +1,448 @@
+import express from 'express'
+import sqlite3 from 'sqlite3'
+import cors from 'cors'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+import { config } from 'dotenv'
+
+config()
+
+const app = express()
+const PORT = process.env.PORT || 3001
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
+
+// Database setup
+const db = new sqlite3.Database('./auez.db', (err) => {
+  if (err) {
+    console.error('Error opening database:', err.message)
+  } else {
+    console.log('Connected to SQLite database')
+  }
+})
+
+// Middleware
+app.use(cors())
+app.use(express.json())
+
+// API Routes - Move to TOP to avoid conflicts
+app.get('/api/finance', (req, res) => {
+  console.log('Finance API hit!')
+  db.get('SELECT SUM(total_income) as todayRevenue FROM shift_history', [], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    console.log('Finance data:', { todayRevenue: row?.todayRevenue || 0 });
+    res.json({
+      todayRevenue: row?.todayRevenue || 0,
+      totalSessions: 47,
+      popularPC: 'PC-008',
+      newCustomers: 12
+    });
+  });
+});
+
+// Initialize database tables
+db.serialize(() => {
+  // Users table
+  db.run(`CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    phone TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    balance INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating users table:', err.message)
+    }
+  })
+
+  // PC statuses table
+  db.run(`CREATE TABLE IF NOT EXISTS pc_statuses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pc_id TEXT NOT NULL,
+    zone TEXT NOT NULL,
+    status TEXT NOT NULL,
+    current_user TEXT,
+    session_start DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating pc_statuses table:', err.message)
+    }
+  })
+
+  // Shift history table
+  db.run(`CREATE TABLE IF NOT EXISTS shift_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    admin_name TEXT NOT NULL,
+    shift_start DATETIME NOT NULL,
+    shift_end DATETIME,
+    total_income INTEGER DEFAULT 0,
+    notes TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating shift_history table:', err.message)
+    }
+  })
+
+  // Insert sample data if tables are empty
+  db.get("SELECT COUNT(*) as count FROM users", (err, row) => {
+    if (err) {
+      console.error('Error checking users table:', err.message)
+      return
+    }
+    if (row.count === 0) {
+      // Insert admin user first
+      const adminPassword = bcrypt.hashSync('123', 10)
+      db.run(
+        "INSERT INTO users (name, phone, password, balance, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
+        ['Админ', '777', adminPassword, 5000],
+        (err) => {
+          if (err) {
+            console.error('Error inserting admin user:', err.message)
+          } else {
+            console.log('Admin user created: Админ / 777 / 123')
+          }
+        }
+      )
+
+      // Insert sample users
+      const sampleUsers = [
+        ['Иван Петров', '+770123456789', 'password123', 2500],
+        ['Мария Иванова', '+770987654321', 'password123', 5000],
+        ['Алексей Смирнов', '+770555666777', 'password123', 1200],
+        ['Тимур Асанов', '+770222333444', 'password123', 8000]
+      ]
+
+      const insertUser = (name, phone, password, balance) => {
+        const hashedPassword = bcrypt.hashSync(password, 10)
+        db.run(
+          "INSERT INTO users (name, phone, password, balance, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
+          [name, phone, hashedPassword, balance],
+          (err) => {
+            if (err) {
+              console.error('Error inserting user:', err.message)
+            }
+          }
+        )
+      }
+
+      sampleUsers.forEach(([name, phone, password, balance]) => {
+        insertUser(name, phone, password, balance)
+      })
+    }
+  })
+
+  // Insert sample shift history data
+  db.get("SELECT COUNT(*) as count FROM shift_history", (err, row) => {
+    if (err) {
+      console.error('Error checking shift_history table:', err.message)
+      return
+    }
+    if (row.count === 0) {
+      // Insert sample shift data
+      const sampleShifts = [
+        ['Ерлан', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(), 150000],
+        ['Ерлан', new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(), new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), 180000],
+        ['Айгуль', new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), 220000],
+        ['Ерлан', new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), 195000],
+        ['Айгуль', new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), 250000],
+        ['Ерлан', new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), 280000],
+        ['Айгуль', new Date().toISOString(), null, 0] // Current shift
+      ]
+
+      const insertShift = (adminName, shiftStart, shiftEnd, totalIncome) => {
+        db.run(
+          "INSERT INTO shift_history (admin_name, shift_start, shift_end, total_income) VALUES (?, ?, ?, ?)",
+          [adminName, shiftStart, shiftEnd, totalIncome],
+          (err) => {
+            if (err) {
+              console.error('Error inserting shift:', err.message)
+            }
+          }
+        )
+      }
+
+      sampleShifts.forEach(([adminName, shiftStart, shiftEnd, totalIncome]) => {
+        insertShift(adminName, shiftStart, shiftEnd, totalIncome)
+      })
+    }
+  })
+
+  db.get("SELECT COUNT(*) as count FROM pc_statuses", (err, row) => {
+    if (err) {
+      console.error('Error checking pc_statuses table:', err.message)
+      return
+    }
+    if (row.count === 0) {
+      // Insert sample PC data
+      const samplePCs = [
+        ['PC-001', 'general', 'available', null, null],
+        ['PC-002', 'general', 'busy', 'Иван Петров', new Date().toISOString()],
+        ['PC-003', 'general', 'available', null, null],
+        ['PC-004', 'general', 'maintenance', null, null],
+        ['PC-005', 'general', 'busy', 'Мария Иванова', new Date().toISOString()],
+        ['PC-006', 'general', 'available', null, null],
+        ['PC-007', 'general', 'available', null, null],
+        ['PC-008', 'general', 'busy', 'Алексей Смирнов', new Date().toISOString()],
+        ['PC-009', 'general', 'available', null, null],
+        ['PC-010', 'general', 'available', null, null],
+        ['PC-011', 'general', 'maintenance', null, null],
+        ['PC-012', 'general', 'available', null, null],
+        ['VIP-001', 'vip', 'available', null, null],
+        ['VIP-002', 'vip', 'busy', 'Тимур Асанов', new Date().toISOString()],
+        ['VIP-003', 'vip', 'available', null, null],
+        ['VIP-004', 'vip', 'available', null, null]
+      ]
+
+      const insertPC = (pcId, zone, status, currentUser, sessionStart) => {
+        db.run(
+          "INSERT INTO pc_statuses (pc_id, zone, status, current_user, session_start) VALUES (?, ?, ?, ?, ?)",
+          [pcId, zone, status, currentUser, sessionStart],
+          (err) => {
+            if (err) {
+              console.error('Error inserting PC:', err.message)
+            }
+          }
+        )
+      }
+
+      samplePCs.forEach(([pcId, zone, status, currentUser, sessionStart]) => {
+        insertPC(pcId, zone, status, currentUser, sessionStart)
+      })
+    }
+  })
+})
+
+// Authentication middleware
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization']
+  const token = authHeader && authHeader.split(' ')[1]
+
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' })
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET)
+    req.user = decoded
+    next()
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid token' })
+  }
+}
+
+// Routes
+// Login
+app.post('/api/login', (req, res) => {
+  const { phone, password } = req.body
+
+  db.get("SELECT * FROM users WHERE phone = ?", [phone], (err, user) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' })
+    }
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' })
+    }
+
+    const isValidPassword = bcrypt.compareSync(password, user.password)
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Invalid credentials' })
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, name: user.name, phone: user.phone },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    )
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        phone: user.phone,
+        balance: user.balance
+      }
+    })
+  })
+})
+
+// Get user balance
+app.get('/api/user/balance', authenticateToken, (req, res) => {
+  db.get("SELECT balance FROM users WHERE id = ?", [req.user.userId], (err, user) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' })
+    }
+    res.json({ balance: user.balance })
+  })
+})
+
+// Update balance (for time purchases)
+app.post('/api/user/balance/update', authenticateToken, (req, res) => {
+  const { amount, cost } = req.body
+
+  db.get("SELECT balance FROM users WHERE id = ?", [req.user.userId], (err, user) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' })
+    }
+
+    if (user.balance < cost) {
+      return res.status(400).json({ error: 'Insufficient balance' })
+    }
+
+    const newBalance = user.balance - cost
+    db.run(
+      "UPDATE users SET balance = ? WHERE id = ?",
+      [newBalance, req.user.userId]
+    )
+
+    res.json({ 
+      success: true, 
+      newBalance,
+      oldBalance: user.balance,
+      cost 
+    })
+  })
+})
+
+// Get all PC statuses
+app.get('/api/pcs', (req, res) => {
+  db.all("SELECT * FROM pc_statuses ORDER BY zone, pc_id", (err, pcs) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' })
+    }
+    res.json(pcs)
+  })
+})
+
+// Update PC status
+app.post('/api/pcs/:pcId/status', authenticateToken, (req, res) => {
+  const { pcId } = req.params
+  const { status, customer } = req.body
+
+  db.run(
+    "UPDATE pc_statuses SET status = ?, current_user = ?, session_start = ?, updated_at = CURRENT_TIMESTAMP WHERE pc_id = ?",
+    [status, customer || null, status === 'busy' ? new Date().toISOString() : null, pcId]
+  )
+
+  res.json({ success: true, pcId, status })
+})
+
+// Get shift history
+app.get('/api/shifts', authenticateToken, (req, res) => {
+  db.all("SELECT * FROM shift_history ORDER BY created_at DESC LIMIT 10", (err, shifts) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' })
+    }
+    res.json(shifts)
+  })
+})
+
+// Start shift
+app.post('/api/shifts/start', authenticateToken, (req, res) => {
+  const { adminName } = req.body
+
+  db.run(
+    "INSERT INTO shift_history (admin_name, shift_start) VALUES (?, CURRENT_TIMESTAMP)",
+    [adminName || req.user.name]
+  )
+
+  res.json({ success: true, shiftStarted: true })
+})
+
+// End shift
+app.post('/api/shifts/:shiftId/end', authenticateToken, (req, res) => {
+  const { shiftId } = req.params
+
+  db.run(
+    "UPDATE shift_history SET shift_end = CURRENT_TIMESTAMP WHERE id = ?",
+    [shiftId]
+  )
+
+  res.json({ success: true, shiftEnded: true })
+})
+
+// Call admin notification
+app.post('/api/admin/call', authenticateToken, (req, res) => {
+  const { message } = req.body
+
+  // In a real app, this would send a notification to admin dashboard
+  console.log(`Admin call from user ${req.user.name}: ${message}`)
+
+  res.json({ 
+    success: true, 
+    message: 'Administrator notified successfully',
+    timestamp: new Date().toISOString()
+  })
+})
+
+// Get notifications
+app.get('/api/notifications', authenticateToken, (req, res) => {
+  // Sample notifications - in real app, this would come from database
+  const notifications = [
+    {
+      id: '1',
+      type: 'warning',
+      title: 'Время истекает',
+      message: `У ПК-005 заканчивается время (5 мин)`,
+      time: '2 мин назад',
+      read: false
+    },
+    {
+      id: '2',
+      type: 'success',
+      title: 'Новый клиент',
+      message: 'Новый клиент зарегистрирован: Данияр К.',
+      time: '10 мин назад',
+      read: false
+    }
+  ]
+
+  res.json(notifications)
+})
+
+// Test route to check database data
+app.get('/api/test', (req, res) => {
+  db.all("SELECT * FROM shift_history LIMIT 5", (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message })
+    }
+    res.json({ data: rows })
+  })
+})
+
+// Add session record (when PC session starts/ends)
+app.post('/api/sessions', authenticateToken, (req, res) => {
+  const { pcId, action, revenue } = req.body
+
+  if (action === 'end' && revenue) {
+    // Update today's shift income
+    db.get(
+      "SELECT id FROM shift_history WHERE DATE(shift_start) = DATE('now') ORDER BY created_at DESC LIMIT 1",
+      (err, shift) => {
+        if (err) {
+          return res.status(500).json({ error: 'Database error' })
+        }
+
+        if (shift) {
+          db.run(
+            "UPDATE shift_history SET total_income = total_income + ? WHERE id = ?",
+            [revenue, shift.id]
+          )
+        }
+      }
+    )
+  }
+
+  res.json({ success: true })
+})
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`AUEZ Server running on port ${PORT}`)
+  console.log(`Database: ./auez.db`)
+  console.log(`API available at: http://localhost:${PORT}/api`)
+})

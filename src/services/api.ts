@@ -1,0 +1,237 @@
+const API_BASE_URL = '/api' // Use relative path for Vite proxy
+
+export interface User {
+  id: number
+  name: string
+  phone: string
+  balance: number
+}
+
+export interface PC {
+  id: number
+  pc_id: string
+  zone: string
+  status: string
+  current_user: string | null
+  session_start: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Shift {
+  id: number
+  admin_name: string
+  shift_start: string
+  shift_end: string | null
+  total_income: number
+  notes: string
+  created_at: string
+}
+
+class ApiService {
+  private token: string | null = null
+
+  setToken(token: string) {
+    this.token = token
+    localStorage.setItem('auez_token', token)
+  }
+
+  getToken(): string | null {
+    if (!this.token) {
+      this.token = localStorage.getItem('auez_token')
+    }
+    return this.token
+  }
+
+  clearToken() {
+    this.token = null
+    localStorage.removeItem('auez_token')
+  }
+
+  private async request(endpoint: string, options: RequestInit = {}): Promise<Response> {
+    const url = `${API_BASE_URL}${endpoint}`
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options.headers as Record<string, string>),
+    }
+
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    })
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`)
+    }
+
+    return response
+  }
+
+  // Authentication
+  async login(phone: string, password: string): Promise<{ token: string; user: User }> {
+    const response = await this.request('/login', {
+      method: 'POST',
+      body: JSON.stringify({ phone, password }),
+    })
+
+    const data = await response.json()
+    this.setToken(data.token)
+    return data
+  }
+
+  // User operations
+  async getUserBalance(userId?: number): Promise<number> {
+    // Get username from localStorage if no userId provided
+    const username = localStorage.getItem('clientUsername')
+    const identifier = userId || username
+    
+    console.log('🔍 Getting balance for identifier:', identifier)
+    
+    // Send as username parameter since backend expects username=777
+    const response = await this.request(`/user/balance?username=${identifier}`)
+    const data = await response.json()
+    console.log('💰 Balance response:', data)
+    return data.balance
+  }
+
+  // PC operations
+  async getPCs(): Promise<PC[]> {
+    const response = await this.request('/pcs')
+    return response.json()
+  }
+
+  async updatePCStatus(pcId: string, status: string, customer?: string): Promise<{ success: boolean; pcId: string; status: string }> {
+    const response = await this.request(`/pcs/${pcId}/status`, {
+      method: 'POST',
+      body: JSON.stringify({ status, customer }),
+    })
+
+    return response.json()
+  }
+
+  // Shift operations
+  async getShifts(): Promise<Shift[]> {
+    const response = await this.request('/shifts')
+    return response.json()
+  }
+
+  async startShift(adminName: string): Promise<{ success: boolean; shiftStarted: boolean }> {
+    const response = await this.request('/shifts/start', {
+      method: 'POST',
+      body: JSON.stringify({ adminName }),
+    })
+
+    return response.json()
+  }
+
+  async endShift(shiftId: number): Promise<{ success: boolean; shiftEnded: boolean }> {
+    const response = await this.request(`/shifts/${shiftId}/end`, {
+      method: 'POST',
+    })
+
+    return response.json()
+  }
+
+  // Admin operations
+  async callAdmin(message: string): Promise<{ success: boolean; message: string; timestamp: string }> {
+    const response = await this.request('/admin/call', {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    })
+
+    return response.json()
+  }
+
+  // Notifications
+  async getNotifications(): Promise<any[]> {
+    const response = await this.request('/notifications')
+    return response.json()
+  }
+
+  // Heartbeat check for server health
+  async heartbeat(): Promise<{ success: boolean; status: string; message?: string }> {
+    try {
+      const response = await this.request('/heartbeat')
+      const data = await response.json()
+      return data
+    } catch (error) {
+      return { success: false, status: 'offline', message: 'Server unreachable' }
+    }
+  }
+
+  // Session operations
+  async startSession(userId: number, duration: number = 1): Promise<{ success: boolean; sessionId: number; cost: number; newBalance: number }> {
+    const response = await this.request('/session/start', {
+      method: 'POST',
+      body: JSON.stringify({ userId, duration }),
+    })
+
+    return response.json()
+  }
+
+  async getActiveSession(userId: number): Promise<{ success: boolean; session: any }> {
+    const response = await this.request(`/session/active?userId=${userId}`)
+    return response.json()
+  }
+
+  // Shop operations
+  async getShopItems(): Promise<{ items: any[] }> {
+    const response = await this.request('/shop/items')
+    return response.json()
+  }
+
+  async purchaseItem(userId: number, itemId: number, quantity: number = 1): Promise<{ success: boolean; item: string; quantity: number; totalCost: number; newBalance: number }> {
+    const response = await this.request('/shop/purchase', {
+      method: 'POST',
+      body: JSON.stringify({ userId, itemId, quantity }),
+    })
+    return response.json()
+  }
+
+  // Tariff operations
+  async getTariffs(): Promise<{ tariffs: any[] }> {
+    const response = await this.request('/tariffs')
+    return response.json()
+  }
+
+  // Balance operations
+  async topUpBalance(userId: number, amount: number): Promise<{ success: boolean; amount: number; newBalance: number }> {
+    const response = await this.request('/balance/topup', {
+      method: 'POST',
+      body: JSON.stringify({ userId, amount }),
+    })
+    return response.json()
+  }
+
+  // Enhanced authentication
+  async authLogin(username: string, password: string): Promise<{ success: boolean; user: any; token: string; redirect: string }> {
+    const response = await this.request('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    })
+    return response.json()
+  }
+
+  // Role-based access
+  async getAdminPanel(): Promise<{ success: boolean; message: string; user: any }> {
+    const response = await this.request('/admin/panel')
+    return response.json()
+  }
+
+  async getClientDashboard(): Promise<{ success: boolean; message: string; user: any }> {
+    const response = await this.request('/client/dashboard')
+    return response.json()
+  }
+
+  // Finance operations
+  async getFinanceData(): Promise<{ todayRevenue: number; totalSessions: number; popularPC: string; newCustomers: number }> {
+    const response = await this.request('/finance')
+    return response.json()
+  }
+}
+
+export default new ApiService()
