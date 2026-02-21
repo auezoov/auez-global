@@ -29,7 +29,7 @@ if (fs.existsSync(distPath)) {
 }
 
 // Safe SPA fallback
-app.get('(.*)', (req, res) => {
+app.get('*', (req, res) => {
   const indexPath = path.resolve(distPath, 'index.html');
   console.log('🔄 SPA fallback request:', req.path);
   console.log('📄 Serving file:', indexPath);
