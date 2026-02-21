@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '../config'
 
-const API_URL = API_BASE_URL
+const API_URL = API_BASE_URL + '/api'
 
 export interface User {
   id: number

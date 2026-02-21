@@ -21,7 +21,7 @@ export default function TelegramLogin() {
     script.src = 'https://telegram.org/js/telegram-widget.js?22'
     script.setAttribute('data-telegram-login', 'Auez_club_bot')
     script.setAttribute('data-size', 'large')
-    script.setAttribute('data-auth-url', 'https://auezoov.vercel.app/auth/telegram')
+    script.setAttribute('data-auth-url', 'https://auez-global.onrender.com/api/auth/telegram')
     script.setAttribute('data-request-access', 'write')
     script.async = true
     
