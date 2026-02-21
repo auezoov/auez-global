@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { LogOut, Bell, Clock, DollarSign, Gamepad2, Headphones, Coffee } from 'lucide-react'
 import api from '../services/api'
-import realtime from '../services/realtime'
 import LockScreen from './LockScreen'
 import TimesUpScreen from './TimesUpScreen'
 import SystemStatus from './SystemStatus'
@@ -36,28 +35,28 @@ export default function ClientDashboard({ username, onLogout }: ClientDashboardP
     loadShopItems()
 
     // Set up real-time listeners
-    realtime.on('session_started', (data: any) => {
-      console.log('📱 Real-time session update:', data)
-      if (data.userId === userId || data.userId === 1) {
-        setBalance(data.newBalance)
-        setTimeRemaining(data.duration)
-        setInitialTime(data.duration)
-        setActiveSession({ id: data.sessionId })
-        setError(null)
-      }
-    })
+    // realtime.on('session_started', (data: any) => {
+    //   console.log('📱 Real-time session update:', data)
+    //   if (data.userId === userId || data.userId === 1) {
+    //     setBalance(data.newBalance)
+    //     setTimeRemaining(data.duration)
+    //     setInitialTime(data.duration)
+    //     setActiveSession({ id: data.sessionId })
+    //     setError(null)
+    //   }
+    // })
 
-    realtime.on('balance_updated', (data: any) => {
-      console.log('📱 Real-time balance update:', data)
-      if (data.userId === userId || data.userId === 1) {
-        setBalance(data.newBalance)
-      }
-    })
+    // realtime.on('balance_updated', (data: any) => {
+    //   console.log('📱 Real-time balance update:', data)
+    //   if (data.userId === userId || data.userId === 1) {
+    //     setBalance(data.newBalance)
+    //   }
+    // })
 
-    return () => {
-      realtime.off('session_started', () => {})
-      realtime.off('balance_updated', () => {})
-    }
+    // return () => {
+    //   realtime.off('session_started', () => {})
+    //   realtime.off('balance_updated', () => {})
+    // }
   }, [userId])
 
   useEffect(() => {
@@ -146,12 +145,12 @@ export default function ClientDashboard({ username, onLogout }: ClientDashboardP
           setBalance(result.newBalance)
           
           // Broadcast real-time update
-          realtime.send('balance_updated', {
-            userId,
-            newBalance: result.newBalance,
-            amount: result.amount,
-            type: 'topup'
-          })
+          // realtime.send('balance_updated', {
+          //   userId,
+          //   newBalance: result.newBalance,
+          //   amount: result.amount,
+          //   type: 'topup'
+          // })
           
           alert(`Баланс успешно пополнен на ${result.amount} ₸`)
         }
@@ -177,13 +176,13 @@ export default function ClientDashboard({ username, onLogout }: ClientDashboardP
         setBalance(result.newBalance)
         
         // Broadcast real-time update
-        realtime.send('balance_updated', {
-          userId,
-          newBalance: result.newBalance,
-          item: result.item,
-          cost: result.totalCost,
-          type: 'purchase'
-        })
+        // realtime.send('balance_updated', {
+        //   userId,
+        //   newBalance: result.newBalance,
+        //   item: result.item,
+        //   cost: result.totalCost,
+        //   type: 'purchase'
+        // })
         
         alert(`Покупка успешна: ${result.item} за ${result.totalCost} ₸`)
       }
