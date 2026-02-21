@@ -9,7 +9,9 @@
     "dev-fallback": "node clean.js",
     "install-all": "npm install && cd server && npm install && cd ../client && npm install",
     "start-server": "cd server && node server.js",
-    "start-client": "cd client && npm run dev"
+    "start-client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "cd client && npm run build && npx serve dist"
   },
   "devDependencies": {
     "@types/node": "^25.3.0",
