@@ -12,7 +12,7 @@
     "server": "node server-pro.js",
     "tunnel": "ngrok http 3001",
     "dev": "concurrently \"node server-pro.js\" \"ngrok http 3001\"",
-    "build": "npm install && cd src && npm install && npm run build",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
