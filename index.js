@@ -13,20 +13,56 @@ const HOST = '0.0.0.0';
 console.log('🚀 Starting AUEZ Production Server...');
 console.log('📁 Working directory:', process.cwd());
 console.log('📂 Script directory:', __dirname);
+console.log('🌐 Environment:', process.env.NODE_ENV || 'development');
+console.log('🔧 Platform:', process.platform);
 
 // Initialize Express
 const app = express();
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log('📨 Request received:', req.method, req.url);
+  next();
+});
+
 // Safe static files serving with absolute paths
 const distPath = path.resolve(process.cwd(), 'client', 'dist');
 console.log('📦 Static files path:', distPath);
+console.log('📂 Dist folder exists:', fs.existsSync(distPath));
 
 if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));
   console.log('✅ Static files configured');
 } else {
   console.warn('⚠️  Dist folder not found at:', distPath);
+  console.log('📂 Available folders:', fs.readdirSync(process.cwd()));
 }
+
+// API Routes with /api/ prefix
+console.log('🔧 Setting up API routes...');
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  console.log('💓 Health check requested');
+  res.json({
+    success: true,
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    version: '2.0.0',
+    database: db ? 'connected' : 'disconnected',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  console.log('🧪 Test endpoint requested');
+  res.json({
+    success: true,
+    message: 'API is working!',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Safe SPA fallback
 app.get('*', (req, res) => {
@@ -126,3 +162,6 @@ process.on('SIGINT', () => {
     process.exit(0);
   });
 });
+
+// Vercel export
+export default app;
