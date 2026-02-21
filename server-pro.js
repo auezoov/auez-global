@@ -11,16 +11,21 @@ import http from 'http'
 import { networkInterfaces } from 'os'
 import fs from 'fs'
 
-config()
+try {
+  console.log("-> Loading environment...")
+  config()
 
-const app = express()
-const server = http.createServer(app)
-const wss = new WebSocketServer({ port: 3002 })
-const PORT = 10000
-const HOST = process.env.HOST || '0.0.0.0'
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
-const NODE_ENV = process.env.NODE_ENV || 'development'
-const DB_PATH = process.env.DB_PATH || './auez.db'
+  console.log("-> Initializing Express...")
+  const app = express()
+  const server = http.createServer(app)
+  const wss = new WebSocketServer({ port: 3002 })
+  const PORT = 10000
+  const HOST = process.env.HOST || '0.0.0.0'
+  const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
+  const NODE_ENV = process.env.NODE_ENV || 'development'
+  const DB_PATH = process.env.DB_PATH || './auez.db'
+
+  console.log("-> Setting up local IP function...")
 
 // Get local IP address for mobile access
 function getLocalIP() {
@@ -50,33 +55,34 @@ app.use((req, res, next) => {
   next(); 
 });
 
-// Middleware
-app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3001', 'http://127.0.0.1:5173'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}))
+console.log("-> Setting up middleware...")
+  // Middleware
+  app.use(cors({
+    origin: ['http://localhost:5173', 'http://localhost:3001', 'http://127.0.0.1:5173'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }))
 
-// Add ngrok-skip-browser-warning header to all responses
-app.use((req, res, next) => {
-  res.setHeader('ngrok-skip-browser-warning', 'any-value');
-  next();
-});
+  // Add ngrok-skip-browser-warning header to all responses
+  app.use((req, res, next) => {
+    res.setHeader('ngrok-skip-browser-warning', 'any-value');
+    next();
+  });
 
-app.use(express.json())
+  app.use(express.json())
 
-// Serve static files from dist folder (production build)
-app.use(express.static('dist'))
+  // Serve static files from dist folder (production build)
+  app.use(express.static('dist'))
 
-// Database setup
-const db = new sqlite3.Database(DB_PATH, (err) => {
-  if (err) {
-    console.error('Error opening database:', err.message)
-  } else {
-    console.log(`Connected to SQLite database at ${DB_PATH}`)
-  }
-})
+  console.log("-> Setting up database...")
+  const db = new sqlite3.Database(DB_PATH, (err) => {
+    if (err) {
+      console.error('Error opening database:', err.message)
+    } else {
+      console.log(`Connected to SQLite database at ${DB_PATH}`)
+    }
+  })
 
 // Initialize database tables
 db.serialize(() => {
@@ -757,13 +763,16 @@ router.get('/heartbeat', (req, res) => {
   }
 })
 
-// Mount API router
-app.use('/api', router)
+console.log("-> Setting up routes...")
+  // Mount API router
+  app.use('/api', router)
 
-// SPA fallback - serve index.html for all non-API routes
-app.get('(.*)', (req, res) => {
-  res.sendFile('dist/index.html', { root: '.' })
-})
+  // SPA fallback - serve index.html for all non-API routes
+  app.get('(.*)', (req, res) => {
+    res.sendFile('dist/index.html', { root: '.' })
+  })
+
+  console.log("-> Starting server...")
 
 // 404 handler
 app.use((req, res) => {
@@ -840,3 +849,8 @@ server.listen(PORT, HOST, async () => {
   
   console.log('\n🎉 SERVER READY!');
 })
+
+} catch (err) {
+  console.error("CRITICAL BOOT ERROR:", err);
+  process.exit(1);
+}
