@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Monitor, DollarSign, Clock, AlertCircle, Settings as SettingsIcon, Zap } from 'lucide-react'
+import { Monitor, DollarSign, Clock, AlertCircle, Settings as SettingsIcon, Zap, Phone } from 'lucide-react'
 import PCMap from './components/PCMap'
 import FinanceDashboard from './components/FinanceDashboard'
 import ShiftManager from './components/ShiftManager'
@@ -10,6 +10,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import AdminNotification from './components/AdminNotification'
 import RoleLogin from './components/RoleLogin'
 import ComputerList from './components/ComputerList'
+import AppAuth from './App-auth'
 
 function App() {
   const [activeTab, setActiveTab] = useState('computers')
@@ -18,6 +19,7 @@ function App() {
   const [clientUsername, setClientUsername] = useState('')
   const [clubName, setClubName] = useState('AUEZ GLOBAL')
   const [showRoleLogin, setShowRoleLogin] = useState(false)
+  const [usePhoneAuth, setUsePhoneAuth] = useState(false)
 
   // Business metrics
   const [metrics, setMetrics] = useState({
@@ -80,6 +82,11 @@ function App() {
     localStorage.removeItem('loginTime')
   }
 
+  // If using phone authentication, show the auth app
+  if (usePhoneAuth) {
+    return <AppAuth />
+  }
+
   const businessTabs = [
     { id: 'computers', name: 'Компьютеры', icon: Monitor, color: 'text-blue-400' },
     { id: 'finance', name: 'Финансы', icon: DollarSign, color: 'text-green-400' },
@@ -125,6 +132,14 @@ function App() {
             </div>
 
             <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setUsePhoneAuth(true)}
+                className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 px-3 py-1 rounded-full transition-colors flex items-center space-x-2"
+              >
+                <Phone className="w-4 h-4" />
+                <span className="text-sm">Вход по телефону</span>
+              </button>
+              
               <div className="flex items-center space-x-2 bg-green-500/20 px-3 py-1 rounded-full">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 <span className="text-green-400 text-sm">Онлайн</span>

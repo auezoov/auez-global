@@ -4,6 +4,8 @@ const cors = require('cors');
 const computerRoutes = require('./routes/computers');
 const sessionRoutes = require('./routes/session');
 const financeRoutes = require('./routes/finance');
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/user');
 const initializeDatabase = require('./init-db');
 
 // Load environment variables
@@ -25,6 +27,8 @@ app.use(express.json());
 app.use('/api/computers', computerRoutes);
 app.use('/api/session', sessionRoutes);
 app.use('/api/finance', financeRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

@@ -73,20 +73,43 @@ class ApiService {
     return response
   }
 
-  // Authentication
-  async login(phone: string, password: string): Promise<{ token: string; user: User }> {
-    const response = await this.request('/login', {
+  // Phone authentication
+  async requestCode(phone: string): Promise<{ message: string }> {
+    const response = await this.request('/api/auth/request-code', {
       method: 'POST',
-      body: JSON.stringify({ phone, password }),
+      body: JSON.stringify({ phone }),
     })
+    return response.json()
+  }
 
+  async verifyCode(phone: string, code: string): Promise<{ token: string; user: any }> {
+    const response = await this.request('/api/auth/verify-code', {
+      method: 'POST',
+      body: JSON.stringify({ phone, code }),
+    })
     const data = await response.json()
     this.setToken(data.token)
     return data
   }
 
-  // User operations
-  async getUserBalance(userId?: number): Promise<number> {
+  // User profile operations
+  async getUserProfile(): Promise<any> {
+    const response = await this.request('/api/user/profile')
+    return response.json()
+  }
+
+  async getUserBalance(): Promise<{ balance: number }> {
+    const response = await this.request('/api/user/balance')
+    return response.json()
+  }
+
+  async getUserHistory(): Promise<any[]> {
+    const response = await this.request('/api/user/history')
+    return response.json()
+  }
+
+  // User operations (legacy)
+  async getUserBalanceLegacy(userId?: number): Promise<number> {
     // Get username from localStorage if no userId provided
     const username = localStorage.getItem('clientUsername')
     const identifier = userId || username

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Bell, X, Monitor } from 'lucide-react'
+import apiService from '../services/api'
+import { API_BASE_URL } from '../config'
 
 interface Notification {
   type: 'session_start' | 'session_end' | 'admin_call'
@@ -26,22 +28,30 @@ export default function AdminNotification() {
     }
   }
 
-  // Listen for admin notifications from server console
+  // Listen for admin notifications from server console using authenticated API
   useEffect(() => {
-    const checkNotifications = setInterval(() => {
-      // In a real app, this would be WebSocket or Server-Sent Events
-      // For now, we'll simulate by checking recent session starts
-      fetch('/api/session/active?userId=1')
-        .then(res => res.json())
-        .then(data => {
+    const checkNotifications = setInterval(async () => {
+      try {
+        const token = apiService.getToken()
+        if (!token) return
+
+        const response = await fetch(`${API_BASE_URL}/session/active`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
           if (data.success && data.session) {
             const newNotification: Notification = {
               type: 'session_start',
-              message: `PC-001: Session Started by 777`,
+              message: `PC-${data.session.computerId}: Session Started`,
               timestamp: new Date().toISOString(),
-              userId: 1,
-              userPhone: '777',
-              cost: 500,
+              userId: data.session.userId,
+              userPhone: data.session.userPhone,
+              cost: data.session.cost,
               sessionId: data.session.id
             }
             
@@ -60,8 +70,10 @@ export default function AdminNotification() {
               }, 5000)
             }
           }
-        })
-        .catch(err => console.log('Notification check failed:', err))
+        }
+      } catch (err) {
+        console.log('Notification check failed:', err)
+      }
     }, 3000) // Check every 3 seconds
 
     return () => clearInterval(checkNotifications)

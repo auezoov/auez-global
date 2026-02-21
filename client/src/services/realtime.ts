@@ -1,4 +1,5 @@
-import { WS_URL } from '../config'
+import { API_BASE_URL } from '../config'
+import apiService from './api'
 
 class RealtimeService {
   private ws: WebSocket | null = null
@@ -13,7 +14,11 @@ class RealtimeService {
 
   private connect() {
     try {
-      const wsUrl = WS_URL
+      const token = apiService.getToken()
+      const wsProtocol = API_BASE_URL.startsWith('https://') ? 'wss://' : 'ws://'
+      const wsHost = API_BASE_URL.replace(/^https?:\/\//, '').replace('/api', '')
+      const wsUrl = `${wsProtocol}${wsHost}/ws${token ? `?token=${token}` : ''}`
+      
       console.log('🔌 Connecting to WebSocket:', wsUrl)
       
       this.ws = new WebSocket(wsUrl)
@@ -22,6 +27,11 @@ class RealtimeService {
         console.log('✅ WebSocket connected')
         this.reconnectAttempts = 0
         this.reconnectDelay = 1000
+        
+        // Send authentication token if available
+        if (token) {
+          this.send('auth', { token })
+        }
       }
       
       this.ws.onmessage = (event) => {

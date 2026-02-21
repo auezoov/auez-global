@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Activity, CheckCircle, AlertCircle, Users, Clock } from 'lucide-react'
+import apiService from '../services/api'
+import { API_BASE_URL } from '../config'
 
 interface LogEntry {
   id: string
@@ -61,21 +63,33 @@ export default function LiveLog() {
     setLogs(prev => [newLog, ...prev].slice(0, 8)) // Keep only 8 most recent logs for sidebar
   }
 
-  // Listen for session starts from server
+  // Listen for session starts from server using authenticated API
   useEffect(() => {
-    const checkSessionStarts = setInterval(() => {
-      fetch('/api/session/active?userId=1')
-        .then(res => res.json())
-        .then(data => {
+    const checkSessionStarts = setInterval(async () => {
+      try {
+        const token = apiService.getToken()
+        if (!token) return
+
+        const response = await fetch(`${API_BASE_URL}/session/active`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
           if (data.success && data.session) {
             // Check if this is a recent session (within last 10 seconds)
             const sessionAge = Date.now() - new Date(data.session.startTime).getTime()
             if (sessionAge < 10000) {
-              addLog('session_start', 'PC-001: Session Started by 777')
+              addLog('session_start', `PC-${data.session.computerId}: Session Started`)
             }
           }
-        })
-        .catch(err => console.log('Session check failed:', err))
+        }
+      } catch (err) {
+        console.log('Session check failed:', err)
+      }
     }, 5000) // Check every 5 seconds
 
     return () => clearInterval(checkSessionStarts)
