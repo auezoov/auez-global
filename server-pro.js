@@ -64,6 +64,9 @@ app.use((req, res, next) => {
 
 app.use(express.json())
 
+// Serve static files from dist folder (production build)
+app.use(express.static('dist'))
+
 // Database setup
 const db = new sqlite3.Database(DB_PATH, (err) => {
   if (err) {
@@ -755,209 +758,15 @@ router.get('/heartbeat', (req, res) => {
 // Mount API router
 app.use('/api', router)
 
+// SPA fallback - serve index.html for all non-API routes
+app.get('*', (req, res) => {
+  res.sendFile('dist/index.html', { root: '.' })
+})
+
 // 404 handler
 app.use((req, res) => {
   console.log('404 HIT on:', req.url)
   res.status(404).send('Route not found on this server instance')
-})
-
-// Base route - Cyberpunk homepage
-app.get('/', (req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.setHeader('ngrok-skip-browser-warning', 'any-value');
-  res.send(`
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AUEZ GLOBAL</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: #0a0a0a;
-            color: #00ff88;
-            font-family: 'Rajdhani', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(0, 136, 255, 0.1) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 1;
-        }
-        
-        .container {
-            text-align: center;
-            z-index: 2;
-            position: relative;
-            padding: 2rem;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #00ff88;
-            border-radius: 20px;
-            box-shadow: 
-                0 0 50px rgba(0, 255, 136, 0.3),
-                inset 0 0 20px rgba(0, 255, 136, 0.1);
-            backdrop-filter: blur(10px);
-            max-width: 600px;
-        }
-        
-        h1 {
-            font-family: 'Orbitron', monospace;
-            font-size: 3rem;
-            font-weight: 900;
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            text-shadow: 
-                0 0 20px #00ff88,
-                0 0 40px rgba(0, 255, 136, 0.5);
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            margin-bottom: 3rem;
-            color: #00ccff;
-            text-shadow: 0 0 10px rgba(0, 204, 255, 0.5);
-            font-weight: 300;
-        }
-        
-        .buttons {
-            display: flex;
-            gap: 1.5rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 2rem;
-        }
-        
-        .btn {
-            background: linear-gradient(135deg, #00ff88, #00ccff);
-            border: none;
-            color: #0a0a0a;
-            padding: 1rem 2rem;
-            font-family: 'Orbitron', monospace;
-            font-weight: 700;
-            font-size: 1rem;
-            text-decoration: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-        
-        .btn:hover::before {
-            left: 100%;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 
-                0 5px 20px rgba(0, 255, 136, 0.4),
-                0 0 30px rgba(0, 255, 136, 0.6);
-            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-        }
-        
-        .status {
-            margin-top: 2rem;
-            padding: 1rem;
-            background: rgba(255, 0, 255, 0.1);
-            border: 1px solid #ff00ff;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            color: #ff00ff;
-        }
-        
-        @keyframes glow {
-            from { text-shadow: 0 0 20px #00ff88, 0 0 40px rgba(0, 255, 136, 0.5); }
-            to { text-shadow: 0 0 30px #00ff88, 0 0 60px rgba(0, 255, 136, 0.8); }
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .floating {
-            animation: float 6s ease-in-out infinite;
-        }
-    </style>
-</head>
-<body>
-    <div class="container floating">
-        <h1>AUEZ GLOBAL</h1>
-        <div class="subtitle">Система управления компьютерным клубом</div>
-        
-        <div class="buttons">
-            <a href="/api/shop/items" class="btn">
-                🛍️ Магазин
-            </a>
-            <a href="/api/tariffs" class="btn">
-                📊 Тарифы
-            </a>
-            <a href="/api/health" class="btn">
-                ⚡ Статус системы
-            </a>
-        </div>
-        
-        <div class="status">
-            🚀 Сервер активен | База данных подключена | Система готова к работе
-        </div>
-    </div>
-    
-    <script>
-        // Добавляем интерактивности
-        document.addEventListener('DOMContentLoaded', function() {
-            const buttons = document.querySelectorAll('.btn');
-            buttons.forEach(btn => {
-                btn.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-2px) scale(1.05)';
-                });
-                btn.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0) scale(1)';
-                });
-            });
-        });
-    </script>
-</body>
-</html>
-  `);
 })
 
 // WebSocket Server for Real-time Sync
