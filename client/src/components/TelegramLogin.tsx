@@ -179,25 +179,28 @@ export default function TelegramLogin() {
             <p className="text-gray-300 text-sm">{t.description}</p>
           </div>
 
-          {/* Custom Login Button */}
+          {/* Custom Login Button with Overlay */}
           <div className="flex justify-center mb-6">
-            <button
-              onClick={handleTelegramLogin}
-              disabled={isLoading}
-              className="group relative inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-2xl shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span className="relative z-10 flex items-center gap-3">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.56c-.21 2.25-1.12 7.68-1.58 10.18-.2 1.07-.58 1.43-.96 1.46-.82.07-1.44-.54-2.23-1.06-1.23-.81-1.93-1.31-3.12-2.1-1.38-.9-.49-1.39.3-2.2.21-.21 3.77-3.46 3.83-3.75.01-.04.01-.19-.07-.27s-.2-.06-.29-.03c-.12.04-2.09 1.33-5.91 3.9-.56.38-1.06.57-1.52.56-.5-.01-1.46-.28-2.18-.51-.88-.28-1.57-.43-1.51-.91.03-.25.38-.51 1.05-.78 4.11-1.79 6.85-2.97 8.22-3.55 3.92-1.63 4.73-1.91 5.26-1.92.12 0 .37.03.53.17.14.12.18.28.2.44.01.08.01.16 0 .24z"/>
-                </svg>
-                {isLoading ? 'Аутентификация...' : t.subtitle}
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </button>
+            <div className="relative inline-block">
+              <button
+                disabled={isLoading}
+                className="group relative inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-2xl shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="relative z-10 flex items-center gap-3">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.56c-.21 2.25-1.12 7.68-1.58 10.18-.2 1.07-.58 1.43-.96 1.46-.82.07-1.44-.54-2.23-1.06-1.23-.81-1.93-1.31-3.12-2.1-1.38-.9-.49-1.39.3-2.2.21-.21 3.77-3.46 3.83-3.75.01-.04.01-.19-.07-.27s-.2-.06-.29-.03c-.12.04-2.09 1.33-5.91 3.9-.56.38-1.06.57-1.52.56-.5-.01-1.46-.28-2.18-.51-.88-.28-1.57-.43-1.51-.91.03-.25.38-.51 1.05-.78 4.11-1.79 6.85-2.97 8.22-3.55 3.92-1.63 4.73-1.91 5.26-1.92.12 0 .37.03.53.17.14.12.18.28.2.44.01.08.01.16 0 .24z"/>
+                  </svg>
+                  {isLoading ? 'Аутентификация...' : t.subtitle}
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </button>
+              
+              {/* Invisible Telegram Widget Overlay */}
+              <div className="absolute inset-0 z-10">
+                <div id="telegram-login-widget" className="w-full h-full"></div>
+              </div>
+            </div>
           </div>
-
-          {/* Telegram Widget (visible but minimal) */}
-          <div id="telegram-login-widget" className="flex justify-center"></div>
 
           {error && (
             <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-3 text-red-200 text-sm text-center backdrop-blur-sm">
