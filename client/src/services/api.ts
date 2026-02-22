@@ -110,8 +110,11 @@ class ApiService {
   }
 
   async getUserBalance(): Promise<{ balance: number }> {
-    const response = await this.request('/api/user/balance')
-    return response.json()
+    // Mock response for now
+    return { balance: 5000 }
+    
+    // const response = await this.request('/api/user/balance')
+    // return response.json()
   }
 
   async getUserHistory(): Promise<any[]> {
@@ -121,6 +124,9 @@ class ApiService {
 
   // User operations (legacy)
   async getUserBalanceLegacy(userId?: number): Promise<number> {
+    // Mock response for now
+    return 5000
+    
     // Get username from localStorage if no userId provided
     const username = localStorage.getItem('clientUsername')
     const identifier = userId || username
