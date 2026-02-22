@@ -100,7 +100,7 @@ export default function TelegramLogin() {
     script.src = 'https://telegram.org/js/telegram-widget.js?22'
     script.setAttribute('data-telegram-login', 'Auez_club_bot')
     script.setAttribute('data-size', 'large')
-    script.setAttribute('data-onauth', 'onTelegramAuth(user)')
+    script.setAttribute('data-auth-url', 'https://auez-global.onrender.com/api/auth/telegram')
     script.setAttribute('data-request-access', 'write')
     script.async = true
     
@@ -122,21 +122,21 @@ export default function TelegramLogin() {
   const t = translations[language]
 
   const handleTelegramLogin = () => {
-    // Try to use Telegram JS API if available
-    if (window.Telegram && window.Telegram.Login && window.Telegram.Login.auth) {
-      window.Telegram.Login.auth(
-        { bot_id: '8404137291', request_access: 'write' },
-        (user: TelegramUser) => {
-          if (window.onTelegramAuth) {
-            window.onTelegramAuth(user)
-          }
-        }
-      )
+    // Try to click the hidden Telegram button (most reliable method)
+    const telegramButton = document.querySelector('#telegram-login-widget button') as HTMLButtonElement
+    if (telegramButton) {
+      telegramButton.click()
     } else {
-      // Fallback: try to click the hidden Telegram button
-      const telegramButton = document.querySelector('#telegram-login-widget button') as HTMLButtonElement
-      if (telegramButton) {
-        telegramButton.click()
+      // Fallback: try JS API if available
+      if (window.Telegram && window.Telegram.Login && window.Telegram.Login.auth) {
+        window.Telegram.Login.auth(
+          { bot_id: '8404137291', request_access: 'write' },
+          (user: TelegramUser) => {
+            if (window.onTelegramAuth) {
+              window.onTelegramAuth(user)
+            }
+          }
+        )
       } else {
         setError('Telegram widget not loaded. Please refresh the page.')
       }
@@ -196,8 +196,8 @@ export default function TelegramLogin() {
             </button>
           </div>
 
-          {/* Telegram Widget (hidden but functional) */}
-          <div id="telegram-login-widget" className="opacity-0 w-0 h-0 overflow-hidden"></div>
+          {/* Telegram Widget (visible but minimal) */}
+          <div id="telegram-login-widget" className="flex justify-center"></div>
 
           {error && (
             <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-3 text-red-200 text-sm text-center backdrop-blur-sm">
