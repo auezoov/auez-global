@@ -75,13 +75,24 @@ class ApiService {
 
   // Telegram authentication
   async telegramAuth(userData: any): Promise<{ token: string; user: any }> {
-    const response = await this.request('/api/auth/telegram', {
-      method: 'POST',
-      body: JSON.stringify(userData),
-    })
-    const data = await response.json()
-    this.setToken(data.token)
-    return data
+    // Mock response for now
+    return {
+      token: 'mock-jwt-token-' + Date.now(),
+      user: {
+        id: 1,
+        firstName: 'Test',
+        lastName: 'User',
+        username: 'testuser'
+      }
+    }
+    
+    // const response = await this.request('/api/auth/telegram', {
+    //   method: 'POST',
+    //   body: JSON.stringify(userData),
+    // })
+    // const data = await response.json()
+    // this.setToken(data.token)
+    // return data
   }
 
   // Phone authentication
