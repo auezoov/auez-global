@@ -113,7 +113,7 @@ class ApiService {
     // Mock response for now
     return { balance: 5000 }
     
-    // const response = await this.request('/api/user/balance')
+    // const response = await this.request('/user/balance')
     // return response.json()
   }
 
