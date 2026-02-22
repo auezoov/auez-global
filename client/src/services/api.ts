@@ -197,11 +197,7 @@ class ApiService {
   // Heartbeat check for server health
   async heartbeat(): Promise<{ success: boolean; status: string; message?: string }> {
     try {
-      // const response = await this.request('/api/heartbeat')
-      // const data = await response.json()
-      // return data
-      
-      // Mock response
+      // Mock response for now
       return {
         success: true,
         status: 'online',
